@@ -26,7 +26,7 @@ func (hdr *DOSHeader) getValues(f *os.File) {
 type OptionalHeader struct {
 	Magic, 						
 	MajorLinkerVersion, 		
-    MinorLinkerVersion, 		
+    	MinorLinkerVersion, 		
 	SizeOfCode, 				
 	SizeOfInitializedData,		
 	SizeOfUninitializedData,	
