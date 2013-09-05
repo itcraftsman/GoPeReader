@@ -26,7 +26,7 @@ func (hdr *DOSHeader) getValues(f *os.File) {
 type OptionalHeader struct {
 	Magic, 						
 	MajorLinkerVersion, 		
-    	MinorLinkerVersion, 		
+    MinorLinkerVersion, 		
 	SizeOfCode, 				
 	SizeOfInitializedData,		
 	SizeOfUninitializedData,	
@@ -113,7 +113,7 @@ func swapValue(val []byte) ([]byte) {
 func chkErr(err error) {
 	if err != nil {
 		fmt.Println()
-		fmt.Println("[!] Fehler: ", err)
+		fmt.Println("[!] Error: ", err)
 		os.Exit(2)
 	}
 }
@@ -204,22 +204,54 @@ func printOptHdr(opthdr OptionalHeader) {
 	fmt.Printf(" NumberOfRvaAndSizes:\t\t 0x%x \n", opthdr.NumberOfRvaAndSizes)
 }
 
-func printSecAll(file *pe.File) {
-	for _, sec := range file.Sections {
-		fmt.Println()
-		fmt.Println("Section Header for ", sec.Name, ": ")
-		fmt.Println()
-		fmt.Printf(" Name:\t\t\t%s\n", sec.Name)
-		fmt.Printf(" VirtualSize:\t\t %#x\n", sec.VirtualSize)
-		fmt.Printf(" VirtualAddress:\t %#x\n", sec.VirtualAddress)
-		fmt.Printf(" SizeOfRawData:\t\t %#x\n", sec.Size)
-		fmt.Printf(" PointerToRawData:\t %#x\n", sec.Offset)
-		fmt.Printf(" PointerToRelocations:\t %#x\n", sec.PointerToRelocations)
-		fmt.Printf(" PointerToLinenumbers:\t %#x\n", sec.PointerToLineNumbers)
-		fmt.Printf(" NumberOfRelocations:\t %#x\n", sec.NumberOfRelocations)
-		fmt.Printf(" NumberOfLinenumbers:\t %#x\n", sec.NumberOfLineNumbers)
-		fmt.Printf(" Characteristics:\t %#x\n", sec.Characteristics)
-		fmt.Println()
+func printSec(file *pe.File, name string) {
+	if name == "all" {
+		for _, sec := range file.Sections {
+			fmt.Println()
+			fmt.Println("Section Header for ", sec.Name, ": ")
+			fmt.Println()
+			fmt.Printf(" Name:\t\t\t%s\n", sec.Name)
+			fmt.Printf(" VirtualSize:\t\t %#x\n", sec.VirtualSize)
+			fmt.Printf(" VirtualAddress:\t %#x\n", sec.VirtualAddress)
+			fmt.Printf(" SizeOfRawData:\t\t %#x\n", sec.Size)
+			fmt.Printf(" PointerToRawData:\t %#x\n", sec.Offset)
+			fmt.Printf(" PointerToRelocations:\t %#x\n", sec.PointerToRelocations)
+			fmt.Printf(" PointerToLinenumbers:\t %#x\n", sec.PointerToLineNumbers)
+			fmt.Printf(" NumberOfRelocations:\t %#x\n", sec.NumberOfRelocations)
+			fmt.Printf(" NumberOfLinenumbers:\t %#x\n", sec.NumberOfLineNumbers)
+			fmt.Printf(" Characteristics:\t %#x\n", sec.Characteristics)
+			fmt.Println()
+		}
+	} else {
+		var sec *pe.Section
+		found := false
+		for _, section := range file.Sections {
+			if section.Name == name {
+				sec = section
+				found = true
+				break
+			}
+		}
+		if found == true {
+			fmt.Println()
+			fmt.Println("Section Header for ", sec.Name, ": ")
+			fmt.Println()
+			fmt.Printf(" Name:\t\t\t%s\n", sec.Name)
+			fmt.Printf(" VirtualSize:\t\t %#x\n", sec.VirtualSize)
+			fmt.Printf(" VirtualAddress:\t %#x\n", sec.VirtualAddress)
+			fmt.Printf(" SizeOfRawData:\t\t %#x\n", sec.Size)
+			fmt.Printf(" PointerToRawData:\t %#x\n", sec.Offset)
+			fmt.Printf(" PointerToRelocations:\t %#x\n", sec.PointerToRelocations)
+			fmt.Printf(" PointerToLinenumbers:\t %#x\n", sec.PointerToLineNumbers)
+			fmt.Printf(" NumberOfRelocations:\t %#x\n", sec.NumberOfRelocations)
+			fmt.Printf(" NumberOfLinenumbers:\t %#x\n", sec.NumberOfLineNumbers)
+			fmt.Printf(" Characteristics:\t %#x\n", sec.Characteristics)
+			fmt.Println()
+		} else {
+			fmt.Println()
+			fmt.Println("[!] Error: section not found")
+			fmt.Println()
+		}
 	}
 }
 
@@ -227,28 +259,29 @@ func printUsage() {
 	fmt.Println()
 	fmt.Println("[!] Usage: pereader.exe <target file> <option>")
 	fmt.Println("[+] Options:")
-	fmt.Println("\t-F\tshow File Header")
-	fmt.Println("\t-O\tshow Optional Header")
-	fmt.Println("\t-S\tshow all Section Headers")
+	fmt.Println("\t-f\tshow File Header")
+	fmt.Println("\t-o\tshow Optional Header")
+	fmt.Println("\t-s\tshow a list of all Sections")
+	fmt.Println("\t-sh\tshow all Section Headers")
 	fmt.Println()
 	fmt.Println("[+] Note: only one option is allowed")
 	fmt.Println()
 }
 
 func main() {
-	if len(os.Args) <= 2 || len(os.Args) >= 4 {
+	if len(os.Args) <= 2 || len(os.Args) > 4 {
 		printUsage()
 	} else {
 		switch os.Args[2] {
-			case "-F":
+			case "-f":
 				file, err := pe.Open(os.Args[1])
 				chkErr(err)
-				
+
 				printFileHdr(file)
 				
 				err = file.Close()
 				chkErr(err)
-			case "-O":
+			case "-o":
 				file, err := pe.Open(os.Args[1])
 				chkErr(err)
 				
@@ -268,11 +301,25 @@ func main() {
 				
 				err = file.Close()
 				chkErr(err)
-			case "-S":
+			case "-s":
 				file, err := pe.Open(os.Args[1])
 				chkErr(err)
 				
-				printSecAll(file)
+				for _, v := range file.Sections {
+					fmt.Println(v.Name)
+				}
+				
+				err = file.Close()
+				chkErr(err)	
+			case "-sh":
+				file, err := pe.Open(os.Args[1])
+				chkErr(err)
+				
+				if len(os.Args) < 4{
+					printSec(file, "all")
+				} else {
+					printSec(file, os.Args[3])
+				}
 				
 				err = file.Close()
 				chkErr(err)
