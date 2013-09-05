@@ -26,7 +26,7 @@ func (hdr *DOSHeader) getValues(f *os.File) {
 type OptionalHeader struct {
 	Magic, 						
 	MajorLinkerVersion, 		
-    MinorLinkerVersion, 		
+	MinorLinkerVersion, 		
 	SizeOfCode, 				
 	SizeOfInitializedData,		
 	SizeOfUninitializedData,	
@@ -259,10 +259,11 @@ func printUsage() {
 	fmt.Println()
 	fmt.Println("[!] Usage: pereader.exe <target file> <option>")
 	fmt.Println("[+] Options:")
-	fmt.Println("\t-f\tshow File Header")
-	fmt.Println("\t-o\tshow Optional Header")
-	fmt.Println("\t-s\tshow a list of all Sections")
-	fmt.Println("\t-sh\tshow all Section Headers")
+	fmt.Println("\t-f\t\t\tshow File Header")
+	fmt.Println("\t-o\t\t\tshow Optional Header")
+	fmt.Println("\t-s\t\t\tshow a list of all Sections")
+	fmt.Println("\t-sh\t\t\tshow all Section Headers")
+	fmt.Println("\t-sh <sectionname>\tshow specific Section Header")
 	fmt.Println()
 	fmt.Println("[+] Note: only one option is allowed")
 	fmt.Println()
